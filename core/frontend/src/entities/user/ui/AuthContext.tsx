@@ -1,11 +1,12 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
+import { authApi, clearTokens, getAccessToken, setTokens } from "../../../shared/api/client";
 
-// Tipos mockados para substituir as dependências do Supabase
 export type AppRole = "admin" | "operator" | "operador" | "montagem" | "supervisor";
 export interface User {
   id: string;
   email?: string;
-  user_metadata?: unknown;
+  full_name?: string;
+  roles?: AppRole[];
 }
 export interface Session {
   user: User;
@@ -18,6 +19,7 @@ interface AuthContextType {
   roles: AppRole[];
   loading: boolean;
   signIn: (email: string, password: string) => Promise<void>;
+  signUp: (fullName: string, email: string, password: string) => Promise<void>;
   signOut: () => Promise<void>;
   hasRole: (role: AppRole) => boolean;
 }
@@ -28,6 +30,7 @@ const AuthContext = createContext<AuthContextType>({
   roles: [],
   loading: true,
   signIn: async () => {},
+  signUp: async () => {},
   signOut: async () => {},
   hasRole: () => false,
 });
@@ -42,24 +45,59 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   const [roles, setRoles] = useState<AppRole[]>([]);
   const [loading, setLoading] = useState(true);
 
-  const fetchRoles = async (userId: string) => {
-    // Mock de roles
-    setRoles(["admin", "operator", "supervisor"]);
-  };
-
   useEffect(() => {
-    // Simula verificação de sessão (localStorage, cookie, etc.) — em dev começa deslogado
-    setTimeout(() => setLoading(false), 300);
+    const restoreSession = async () => {
+      const token = getAccessToken();
+      if (!token) {
+        setLoading(false);
+        return;
+      }
+
+      try {
+        const me = await authApi.me();
+        setUser(me as User);
+        setRoles(((me.roles || []) as AppRole[]));
+        setSession({ user: me as User, access_token: token });
+      } catch {
+        clearTokens();
+        setUser(null);
+        setRoles([]);
+        setSession(null);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    restoreSession();
   }, []);
 
-  const signIn = async (_email: string, _password: string) => {
-    const mockUser = { id: "user-123", email: _email };
-    setSession({ user: mockUser, access_token: "mock-token" });
-    setUser(mockUser);
-    await fetchRoles(mockUser.id);
+  const applyAuth = (data: {
+    user: User;
+    roles: string[];
+    access_token: string;
+    refresh_token?: string;
+  }) => {
+    setTokens(data.access_token, data.refresh_token);
+    setSession({ user: data.user, access_token: data.access_token });
+    setUser(data.user);
+    setRoles(data.roles as AppRole[]);
+  };
+
+  const signIn = async (email: string, password: string) => {
+    applyAuth(await authApi.login(email, password));
+  };
+
+  const signUp = async (fullName: string, email: string, password: string) => {
+    applyAuth(await authApi.register(fullName, email, password));
   };
 
   const signOut = async () => {
+    try {
+      if (getAccessToken()) await authApi.logout();
+    } catch {
+      // local logout must still happen if the token already expired
+    }
+    clearTokens();
     setSession(null);
     setUser(null);
     setRoles([]);
@@ -69,7 +107,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
 
   return (
     <AuthContext.Provider
-      value={{ session, user, roles, loading, signIn, signOut, hasRole }}
+      value={{ session, user, roles, loading, signIn, signUp, signOut, hasRole }}
     >
       {children}
     </AuthContext.Provider>

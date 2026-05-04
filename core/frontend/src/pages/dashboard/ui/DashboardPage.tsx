@@ -6,26 +6,27 @@ import {
   CardTitle,
 } from "../../../shared/ui/card";
 import { ClipboardList, Puzzle, Users, PackageCheck } from "lucide-react";
+import { apiRequest } from "../../../shared/api/client";
 
 const DashboardPage = () => {
   const { data: orderCount } = useQuery({
     queryKey: ["orders-count"],
-    queryFn: async () => 12, // Mock Count
+    queryFn: async () => apiRequest<number>("/dashboard/orders-count"),
   });
 
   const { data: partCount } = useQuery({
     queryKey: ["parts-count"],
-    queryFn: async () => 450, // Mock Count
+    queryFn: async () => apiRequest<number>("/dashboard/parts-count"),
   });
 
   const { data: clientCount } = useQuery({
     queryKey: ["clients-count"],
-    queryFn: async () => 35, // Mock Count
+    queryFn: async () => apiRequest<number>("/dashboard/clients-count"),
   });
 
   const { data: pendingParts } = useQuery({
     queryKey: ["pending-parts"],
-    queryFn: async () => 87, // Mock Count
+    queryFn: async () => apiRequest<number>("/dashboard/pending-parts"),
   });
 
   const stats = [

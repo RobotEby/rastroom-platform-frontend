@@ -27,18 +27,7 @@ import {
 import { useToast } from "../../../shared/hooks/use-toast";
 import { Plus, Pencil, Trash2 } from "lucide-react";
 import { Textarea } from "../../../shared/ui/textarea";
-
-// Mock em memória
-let mockClients = [
-  {
-    id: "1",
-    name: "Cliente A",
-    email: "a@a.com",
-    phone: "11999999999",
-    address: "Rua A",
-    notes: "",
-  },
-];
+import { apiRequest } from "../../../shared/api/client";
 
 const ClientsPage = () => {
   const [open, setOpen] = useState(false);
@@ -55,20 +44,21 @@ const ClientsPage = () => {
 
   const { data: clients, isLoading } = useQuery({
     queryKey: ["clients"],
-    queryFn: async () => {
-      return [...mockClients];
-    },
+    queryFn: async () => apiRequest<any[]>("/clients"),
   });
 
   const save = useMutation({
     mutationFn: async () => {
       if (editId) {
-        mockClients = mockClients.map((c) =>
-          c.id === editId ? { ...c, ...form } : c,
-        );
-      } else {
-        mockClients.push({ id: Date.now().toString(), ...form });
+        return apiRequest(`/clients/${editId}`, {
+          method: "PATCH",
+          body: JSON.stringify(form),
+        });
       }
+      return apiRequest("/clients", {
+        method: "POST",
+        body: JSON.stringify(form),
+      });
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["clients"] });
@@ -82,7 +72,7 @@ const ClientsPage = () => {
 
   const del = useMutation({
     mutationFn: async (id: string) => {
-      mockClients = mockClients.filter((c) => c.id !== id);
+      return apiRequest(`/clients/${id}`, { method: "DELETE" });
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["clients"] });

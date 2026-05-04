@@ -12,6 +12,7 @@ import { Badge } from '../../../shared/ui/badge';
 import { useToast } from '../../../shared/hooks/use-toast';
 import { Camera, Keyboard, QrCode } from 'lucide-react';
 import { Html5Qrcode } from 'html5-qrcode';
+import { apiRequest } from '../../../shared/api/client';
 
 export type ProcessType =
   | 'corte'
@@ -65,23 +66,12 @@ const ScannerPage = () => {
         // keep rawData as code
       }
 
-      // Mock resolve
-      const mockData = {
-        id: 'part-1',
-        name: 'Mock Part Found',
-        code,
-        is_mother_part: false,
-        current_process: 'corte' as ProcessType,
-        furniture: {
-          name: 'Mock Furniture',
-          orders: { code: 'PED-MOCK', clients: { name: 'John Doe' } },
-        },
-      };
-
-      if (code !== 'ERROR') {
-        // Simulate mock success
-        setScannedPart(mockData);
-      } else {
+      try {
+        const part = await apiRequest<ScannedPart>(
+          `/parts/by-code/${encodeURIComponent(code)}`,
+        );
+        setScannedPart(part);
+      } catch {
         toast({
           title: 'Peça não encontrada',
           description: `Código: ${code}`,

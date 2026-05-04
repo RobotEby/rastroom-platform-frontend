@@ -28,21 +28,7 @@ import {
 } from "../../../shared/ui/select";
 import { useToast } from "../../../shared/hooks/use-toast";
 import { Plus, Trash2 } from "lucide-react";
-
-const mockOrdersList = [
-  { id: "1", code: "PED-001", clients: { name: "Cliente A" } },
-];
-let mockFurnitureList = [
-  {
-    id: "1",
-    order_id: "1",
-    name: "Armário Base",
-    description: "",
-    furniture_type: "Armário",
-    estimated_lead_time_hours: 12,
-    orders: mockOrdersList[0],
-  },
-];
+import { apiRequest } from "../../../shared/api/client";
 
 const FurniturePage = () => {
   const [open, setOpen] = useState(false);
@@ -58,19 +44,19 @@ const FurniturePage = () => {
 
   const { data: orders } = useQuery({
     queryKey: ["orders-list"],
-    queryFn: async () => mockOrdersList,
+    queryFn: async () => apiRequest<any[]>("/orders"),
   });
 
   const { data: furniture, isLoading } = useQuery({
     queryKey: ["furniture"],
-    queryFn: async () => mockFurnitureList,
+    queryFn: async () => apiRequest<any[]>("/furniture"),
   });
 
   const save = useMutation({
     mutationFn: async () => {
-      const orderMatch = mockOrdersList.find((o) => o.id === form.order_id);
-      mockFurnitureList.push({
-        id: Date.now().toString(),
+      return apiRequest("/furniture", {
+        method: "POST",
+        body: JSON.stringify({
         order_id: form.order_id,
         name: form.name,
         description: form.description || "",
@@ -78,7 +64,7 @@ const FurniturePage = () => {
         estimated_lead_time_hours: form.estimated_lead_time_hours
           ? Number(form.estimated_lead_time_hours)
           : 0,
-        orders: orderMatch ?? { id: "", code: "", clients: { name: "" } },
+        }),
       });
     },
     onSuccess: () => {
@@ -99,7 +85,7 @@ const FurniturePage = () => {
 
   const del = useMutation({
     mutationFn: async (id: string) => {
-      mockFurnitureList = mockFurnitureList.filter((f) => f.id !== id);
+      return apiRequest(`/furniture/${id}`, { method: "DELETE" });
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["furniture"] });

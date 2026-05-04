@@ -18,6 +18,7 @@ import {
   Pie,
   Cell,
 } from "recharts";
+import { apiRequest } from "../../../shared/api/client";
 
 export type ProcessType =
   | "corte"
@@ -48,51 +49,22 @@ const COLORS = [
 const SupervisorDashboard = () => {
   const { data: partsByProcess } = useQuery({
     queryKey: ["parts-by-process"],
-    queryFn: async () => [
-      { name: "Corte", value: 120 },
-      { name: "Lixamento", value: 80 },
-      { name: "Pintura", value: 45 },
-    ],
+    queryFn: async () => apiRequest<Array<{ name: string; value: number }>>("/dashboard/parts-by-process"),
   });
 
   const { data: recentLogs } = useQuery({
     queryKey: ["recent-logs"],
-    queryFn: async () => [
-      {
-        id: "1",
-        parts: { name: "Lateral E", code: "P-123" },
-        processes: { process_type: "corte" },
-        status: "concluido",
-        elapsed_seconds: 600,
-      },
-      {
-        id: "2",
-        parts: { name: "Frente Gaveta", code: "P-456" },
-        processes: { process_type: "lixamento" },
-        status: "em_execucao",
-        elapsed_seconds: null,
-      },
-    ],
+    queryFn: async () => apiRequest<any[]>("/dashboard/recent-logs"),
   });
 
   const { data: avgTimes } = useQuery({
     queryKey: ["avg-times"],
-    queryFn: async () => [
-      { name: "Corte", media: 10 },
-      { name: "Lixamento", media: 15 },
-      { name: "Pintura", media: 30 },
-    ],
+    queryFn: async () => apiRequest<Array<{ name: string; media: number }>>("/dashboard/avg-times"),
   });
 
   const { data: alerts } = useQuery({
     queryKey: ["alerts"],
-    queryFn: async () => [
-      {
-        id: "1",
-        parts: { name: "Porta Central", code: "P-999" },
-        processes: { process_type: "pintura", estimated_time_minutes: 20 },
-      },
-    ],
+    queryFn: async () => apiRequest<any[]>("/dashboard/alerts"),
   });
 
   return (

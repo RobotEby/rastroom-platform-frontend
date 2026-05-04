@@ -17,6 +17,7 @@ import {
   PackageCheck,
   ScanLine,
 } from "lucide-react";
+import { apiRequest } from "../../../shared/api/client";
 
 // Tipagem local substituindo as definições do banco
 export type ProcessType =
@@ -35,55 +36,6 @@ const processLabels: Record<ProcessType, string> = {
   montagem: "Montagem",
   expedicao: "Expedição",
 };
-
-// --- Mocks para simular o banco de dados ---
-const mockOrders = [
-  {
-    id: "ord-1",
-    code: "PED-001",
-    status: "em_producao",
-    clients: { name: "Cliente VIP" },
-  },
-];
-
-const mockParts = [
-  {
-    id: "m1",
-    code: "M-100",
-    qr_code_data: "M-100",
-    name: "Kit Armário Base",
-    is_mother_part: true,
-    current_process: "expedicao" as ProcessType,
-    furniture: {
-      order_id: "ord-1",
-      name: "Armário Base",
-      orders: mockOrders[0],
-    },
-    // Simulando que a peça-mãe já concluiu seus processos
-    processes: [{ execution_logs: [{ status: "concluido" }] }],
-  },
-  {
-    id: "c1",
-    parent_part_id: "m1",
-    code: "P-101",
-    name: "Lateral Esquerda",
-    finish_color_hex: "#cccccc",
-    current_process: "borda" as ProcessType,
-    // Simulando peça-filha concluída
-    processes: [{ execution_logs: [{ status: "concluido" }] }],
-  },
-  {
-    id: "c2",
-    parent_part_id: "m1",
-    code: "P-102",
-    name: "Lateral Direita",
-    finish_color_hex: "#cccccc",
-    current_process: "pintura" as ProcessType,
-    // Simulando peça-filha pendente
-    processes: [{ execution_logs: [{ status: "em_execucao" }] }],
-  },
-];
-// -------------------------------------------
 
 interface IPart {
   id: string | number;
@@ -119,32 +71,18 @@ const AssemblyPage = () => {
       // keep code as-is
     }
 
-    // Simulando delay de rede
-    await new Promise((resolve) => setTimeout(resolve, 300));
-
-    // Busca da peça-mãe no Mock
-    const mother = mockParts.find(
-      (p) =>
-        p.is_mother_part &&
-        (p.code === code || p.qr_code_data === searchCode.trim()),
-    );
-
-    if (!mother) {
+    try {
+      const kit = await apiRequest<{ motherPart: IPart; childParts: IPart[] }>(
+        `/assembly/kits/lookup?code=${encodeURIComponent(code)}`,
+      );
+      setMotherPart(kit.motherPart);
+      setChildParts(kit.childParts);
+      setSearchCode("");
+    } catch {
       toast({ title: "Peça-Mãe não encontrada", variant: "destructive" });
       setMotherPart(null);
       setChildParts([]);
-      return;
     }
-
-    setMotherPart(mother);
-
-    // Busca das peças-filhas no Mock
-    const children = mockParts
-      .filter((p) => p.parent_part_id === mother.id)
-      .sort((a, b) => a.name.localeCompare(b.name));
-
-    setChildParts(children);
-    setSearchCode("");
   };
 
   const isPartReady = (part: IPart | null) => {
@@ -166,17 +104,10 @@ const AssemblyPage = () => {
     mutationFn: async () => {
       if (!allReady) throw new Error("Nem todas as peças estão prontas!");
 
-      // Simulando delay de rede
-      await new Promise((resolve) => setTimeout(resolve, 500));
-
-      const orderId = motherPart?.furniture?.order_id;
-      // Atualizando o status do pedido no Mock
-      if (orderId) {
-        const orderIndex = mockOrders.findIndex((o) => o.id === orderId);
-        if (orderIndex > -1) {
-          mockOrders[orderIndex].status = "montagem";
-        }
-      }
+      if (!motherPart) throw new Error("Peça-Mãe não encontrada");
+      return apiRequest(`/assembly/kits/${motherPart.id}/finalize`, {
+        method: "POST",
+      });
     },
     onSuccess: () => {
       toast({

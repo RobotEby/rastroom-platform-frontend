@@ -1,299 +1,527 @@
-# Rastroom
+# Rastroom Platform
 
-[![React](https://img.shields.io/badge/React-18-61DAFB?logo=react&logoColor=black)](https://react.dev/)
-[![TypeScript](https://img.shields.io/badge/TypeScript-5-3178C6?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
-[![Vite](https://img.shields.io/badge/Vite-5-646CFF?logo=vite&logoColor=white)](https://vitejs.dev/)
-[![Node](https://img.shields.io/badge/Node-18+-339933?logo=node.js&logoColor=white)](https://nodejs.org/)
+<p align="center">
+  <strong>Sistema web/PWA para rastreabilidade de peças de móveis com QR Code, controle de produção, montagem e expedição.</strong>
+</p>
 
-Sistema de rastreabilidade de peças de móveis com QR Code — romaneio, pedidos, clientes, peças, móveis, scanner, montagem e expedição.
+<p align="center">
+  <img alt="Status" src="https://img.shields.io/badge/status-em%20desenvolvimento-f59e0b?style=for-the-badge">
+  <img alt="React" src="https://img.shields.io/badge/React-18.3.1-61DAFB?style=for-the-badge&logo=react&logoColor=111827">
+  <img alt="TypeScript" src="https://img.shields.io/badge/TypeScript-5.8.3-3178C6?style=for-the-badge&logo=typescript&logoColor=white">
+  <img alt="Vite" src="https://img.shields.io/badge/Vite-5.4.21-646CFF?style=for-the-badge&logo=vite&logoColor=white">
+  <img alt="Tailwind CSS" src="https://img.shields.io/badge/Tailwind%20CSS-3.4.19-38BDF8?style=for-the-badge&logo=tailwindcss&logoColor=white">
+  <img alt="PWA" src="https://img.shields.io/badge/PWA-ready-5A0FC8?style=for-the-badge&logo=pwa&logoColor=white">
+</p>
 
----
-
-## Índice (Table of Contents)
-
-- [Rastroom](#rastroom)
-  - [Índice (Table of Contents)](#índice-table-of-contents)
-  - [1. Visão Geral e Propósito](#1-visão-geral-e-propósito)
-    - [O que é o projeto](#o-que-é-o-projeto)
-    - [Problema que resolve](#problema-que-resolve)
-    - [Como funciona em alto nível](#como-funciona-em-alto-nível)
-  - [2. Arquitetura do Projeto (Feature-Sliced Design — FSD)](#2-arquitetura-do-projeto-feature-sliced-design--fsd)
-    - [Camadas utilizadas](#camadas-utilizadas)
-    - [Regra de ouro das dependências](#regra-de-ouro-das-dependências)
-    - [Onde colocar novo código](#onde-colocar-novo-código)
-  - [3. Guia de Contribuição e Git Workflow](#3-guia-de-contribuição-e-git-workflow)
-    - [Estratégia de branching](#estratégia-de-branching)
-    - [Conventional Commits](#conventional-commits)
-    - [Fluxo de Pull Request (PR)](#fluxo-de-pull-request-pr)
-  - [4. Stack Tecnológica](#4-stack-tecnológica)
-  - [5. Configuração e Instalação (Setup Local)](#5-configuração-e-instalação-setup-local)
-    - [Pré-requisitos](#pré-requisitos)
-    - [Passo a passo (frontend)](#passo-a-passo-frontend)
-    - [Backend (opcional)](#backend-opcional)
-    - [Gerenciamento de pacotes](#gerenciamento-de-pacotes)
-  - [6. Scripts Disponíveis](#6-scripts-disponíveis)
-  - [7. Referências](#7-referências)
+<p align="center">
+  <img alt="React Router" src="https://img.shields.io/badge/React%20Router-6.30.1-CA4245?style=flat-square&logo=reactrouter&logoColor=white">
+  <img alt="TanStack Query" src="https://img.shields.io/badge/TanStack%20Query-5.90.21-FF4154?style=flat-square&logo=reactquery&logoColor=white">
+  <img alt="Radix UI" src="https://img.shields.io/badge/Radix%20UI-components-111827?style=flat-square">
+  <img alt="Vitest" src="https://img.shields.io/badge/Vitest-3.2.4-6E9F18?style=flat-square&logo=vitest&logoColor=white">
+  <img alt="ESLint" src="https://img.shields.io/badge/ESLint-9.32.0-4B32C3?style=flat-square&logo=eslint&logoColor=white">
+</p>
 
 ---
 
-## 1. Visão Geral e Propósito
+## Sumário
 
-### O que é o projeto
+- [Sobre o projeto](#sobre-o-projeto)
+- [Status do projeto](#status-do-projeto)
+- [Principais funcionalidades](#principais-funcionalidades)
+- [Perfis de acesso](#perfis-de-acesso)
+- [Arquitetura e stack](#arquitetura-e-stack)
+- [Estrutura de pastas](#estrutura-de-pastas)
+- [Pré-requisitos](#pré-requisitos)
+- [Variáveis de ambiente](#variáveis-de-ambiente)
+- [Como rodar o projeto](#como-rodar-o-projeto)
+- [Scripts disponíveis](#scripts-disponíveis)
+- [Rotas da aplicação](#rotas-da-aplicação)
+- [Integração com a API](#integração-com-a-api)
+- [Importação de peças](#importação-de-peças)
+- [PWA e instalação](#pwa-e-instalação)
+- [Testes e qualidade](#testes-e-qualidade)
+- [Build e deploy](#build-e-deploy)
+- [Troubleshooting](#troubleshooting)
+- [Roadmap sugerido](#roadmap-sugerido)
+- [Contribuição](#contribuição)
+- [Licença](#licença)
+- [Autor e contato](#autor-e-contato)
 
-**Rastroom** (pacote `rastroom-platform`) é uma plataforma para **rastreabilidade de peças de móveis** usando QR Code. Cobrem-se romaneio, pedidos, clientes, peças, móveis, scanner de códigos, processos (corte, etc.), montagem, expedição e dashboards operacionais.
+## Sobre o projeto
 
-### Problema que resolve
+O **Rastroom Platform** é uma aplicação frontend para controle e rastreabilidade de peças na produção de móveis. A plataforma conecta o cadastro comercial e técnico, como clientes, pedidos, móveis e peças, ao fluxo operacional do chão de fábrica, com leitura de QR Code, avanço por processos, validação de kits e expedição.
 
-- **Negócio:** Rastrear peças ao longo do fluxo (corte → processos → montagem → expedição), associá-las a pedidos e clientes, e dar visibilidade operacional (dashboard, tempos por processo).
-- **Técnico:** Manter uma SPA moderna (PWA) que consome uma API REST única, com autenticação e experiência adequada em ambiente de fábrica/armazém.
+O objetivo é reduzir perdas de informação entre engenharia, produção, montagem e entrega, oferecendo uma visão clara de onde cada peça está, qual etapa precisa ser executada e quais pedidos já podem seguir para montagem ou expedição.
 
-### Como funciona em alto nível
+> Este repositório contém o **frontend** da plataforma. A API é esperada como um backend Node.js/TypeScript rodando em ambiente separado.
 
-- **Frontend:** Aplicação React (Vite) na porta **8080** — SPA com roteamento, autenticação e consumo da API REST.
-- **Backend:** API Java (Spring Boot) na porta **8081** — persiste dados em **PostgreSQL** e pode usar **Redis** (cache/sessão). Autenticação **JWT**.
-- **PWA:** O frontend é instalável e pode funcionar em campo com suporte offline básico (cache de assets e estratégia para API).
+## Status do projeto
 
-Fluxo resumido: utilizador faz login → acede a clientes, pedidos, peças, scanner, processos, montagem, expedição e dashboards; o frontend chama `/api/*`, o proxy em desenvolvimento reencaminha para o backend em 8081.
+🟡 **Em desenvolvimento.**
 
----
+O frontend já possui os principais módulos da operação implementados, incluindo autenticação, dashboards, cadastros, scanner, processos, montagem, expedição e PWA. Ainda há pontos de evolução recomendados, especialmente em testes automatizados, contrato formal da API e ajustes finais de deploy.
 
-## 2. Arquitetura do Projeto (Feature-Sliced Design — FSD)
+## Principais funcionalidades
 
-O frontend segue **Feature-Sliced Design (FSD)**. Todo o código da aplicação React está em **`core/frontend/src/`**. O Vite está configurado com o alias **`@`** apontando para `core/frontend/src` (ex.: `import { Button } from '@/shared/ui/button'`).
+- 🔐 **Autenticação com sessão JWT**: login, cadastro, restauração de sessão e logout.
+- 👥 **Controle por perfil de usuário**: menus e áreas da aplicação variam por papel operacional.
+- 📊 **Dashboard administrativo**: indicadores de pedidos, peças, clientes e peças pendentes.
+- 🧾 **Gestão de clientes**: criação, edição, listagem e remoção de clientes.
+- 📦 **Gestão de pedidos**: cadastro por cliente, status do pedido e data estimada de entrega.
+- 🪑 **Gestão de móveis**: vínculo entre pedidos e móveis, tipo e lead time estimado.
+- 🧩 **Gestão de peças**: cadastro manual de peças, medidas, material, acabamento, cor, receita de tinta e processos.
+- 🔳 **QR Code por peça**: geração e visualização de QR Codes com `qrcode.react`.
+- 📷 **Scanner de peças**: leitura por câmera usando `html5-qrcode` ou entrada manual/scanner USB.
+- 📥 **Importação CSV/XML**: importação em lote de peças com preview antes do envio.
+- 🏭 **Fluxo de processos**: controle de etapas como corte, lixamento, pintura, borda, montagem e expedição.
+- ⏱️ **Cronometragem de execução**: início/fim de processo com tempo decorrido.
+- 🚦 **Validação de sequência**: bloqueio de uma etapa quando a anterior ainda não foi concluída.
+- ✅ **Conferência de kit**: validação de peça-mãe e peças filhas antes da montagem.
+- 🚚 **Expedição**: listagem de pedidos prontos e marcação como expedidos.
+- 📈 **Dashboard de supervisor**: gráficos, tempos médios, atividades recentes e alertas de gargalo.
+- 📱 **PWA instalável**: suporte a instalação em celular e cache básico via `vite-plugin-pwa`.
 
-### Camadas utilizadas
+## Perfis de acesso
 
-As camadas, da **mais alta** (mais próxima do utilizador e da aplicação) à **mais baixa** (reutilizável e independente de negócio), são:
+A aplicação usa papéis retornados pela API para montar a navegação:
 
-| Camada       | Descrição                                       | Exemplos no projeto                                                                                                              |
-| ------------ | ----------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
-| **app**      | Inicialização, roteamento, providers globais    | `App.tsx`, `main.tsx`, `router/ProtectedRoute.tsx`, `styles/global.css`                                                          |
-| **pages**    | Páginas por rota                                | `dashboard`, `clients`, `orders`, `furniture`, `parts`, `scanner`, `processes`, `assembly`, `expedition`, `install`, `not-found` |
-| **widgets**  | Blocos compostos reutilizáveis (layout, seções) | `app-layout`, `app-sidebar`, `auth-form` (Login)                                                                                 |
-| **features** | Ações de usuário reutilizáveis                  | `import-parts` (ImportPartsDialog)                                                                                               |
-| **entities** | Modelos e lógica de domínio                     | `user` (AuthContext, tipos User/Session), `order` (order-constants)                                                              |
-| **shared**   | UI primitiva, hooks, utils                      | `button`, `input`, `dialog`, `table`, `use-toast`, `use-mobile`, `lib/utils`                                                     |
+| Perfil                  | Acesso principal                                                      |
+| ----------------------- | --------------------------------------------------------------------- |
+| `admin`                 | Painel, clientes, pedidos, móveis, peças e também áreas operacionais. |
+| `operator` / `operador` | Scanner e processos do chão de fábrica.                               |
+| `montagem`              | Montagem/conferência de kit e expedição.                              |
+| `supervisor`            | Dashboard de supervisor e tela de instalação do app.                  |
 
-Cada página vive em `pages/<nome>/ui/<Nome>Page.tsx` (ou equivalente). Não existe camada "processes" — "Processes" é uma **página** em `pages/processes/`.
+Caso nenhum desses papéis seja identificado, o frontend exibe todos os grupos de menu como fallback operacional.
 
-### Regra de ouro das dependências
+## Arquitetura e stack
 
-Um módulo **só pode importar de camadas inferiores**. Não pode importar de camadas superiores nem da mesma camada (entre slices diferentes).
+### Frontend
 
-- **shared** → não importa de nenhuma outra camada FSD.
-- **entities** → pode importar apenas de `shared`.
-- **features** → pode importar de `entities` e `shared`.
-- **widgets** → pode importar de `features`, `entities` e `shared`.
-- **pages** → pode importar de `widgets`, `features`, `entities` e `shared`.
-- **app** → pode importar de todas as camadas abaixo.
+- **React 18** com **TypeScript**.
+- **Vite** como bundler/dev server.
+- **React Router DOM** para rotas e layout protegido.
+- **TanStack React Query** para cache, sincronização e invalidação de dados da API.
+- **Tailwind CSS** para estilização utilitária.
+- **Radix UI/shadcn-style components** para componentes acessíveis e reutilizáveis.
+- **Lucide React** para ícones.
+- **Recharts** para gráficos do dashboard.
+- **Sonner** e toast local para feedback visual.
+- **html5-qrcode** para leitura de QR Code pela câmera.
+- **qrcode.react** para renderização de QR Code.
+- **vite-plugin-pwa** para manifesto, service worker e instalação do app.
 
-Diagrama (direção das dependências):
+### Backend
 
-```mermaid
-flowchart TD
-  app[app]
-  pages[pages]
-  widgets[widgets]
-  features[features]
-  entities[entities]
-  shared[shared]
-  app --> pages
-  app --> widgets
-  pages --> widgets
-  pages --> features
-  pages --> entities
-  pages --> shared
-  widgets --> features
-  widgets --> entities
-  widgets --> shared
-  features --> entities
-  features --> shared
-  entities --> shared
-```
+- **API Node.js/TypeScript** esperada em `http://localhost:8081` durante o desenvolvimento.
+- O frontend conversa com a API por `fetch`, usando `VITE_API_URL` ou o proxy `/api` configurado no Vite.
+- Este repositório não contém o código do backend, migrations, seeds ou schema de banco.
 
-### Onde colocar novo código
+### Banco de dados
 
-| O quê                                                        | Onde                    |
-| ------------------------------------------------------------ | ----------------------- |
-| Componente de UI genérico (botão, input, card)               | **shared/ui**           |
-| Tipo ou modelo de domínio (ex.: Order, User)                 | **entities/<entidade>** |
-| Ação de usuário reutilizável (ex.: dialog de importar peças) | **features/<feature>**  |
-| Bloco de layout ou seção reutilizável (sidebar, header)      | **widgets/<widget>**    |
-| Tela ligada a uma rota                                       | **pages/<page>/ui**     |
-| Rotas, providers globais, estilos globais                    | **app**                 |
+- O banco é responsabilidade do backend.
+- Pelo desenho da aplicação, a API deve persistir entidades como usuários, clientes, pedidos, móveis, peças, processos, logs de execução, kits e expedições.
 
-Ao criar um novo componente ou módulo, pergunte: "Quem pode importar isto?" Se for só uma tela, fica em **pages**. Se for reutilizado em várias telas como bloco, **widgets**. Se for uma ação (ex.: modal de importação), **features**. Se for entidade de domínio, **entities**. Se for peça de UI sem regra de negócio, **shared**.
+### Qualidade e ferramentas
 
----
+- **ESLint 9** com regras para TypeScript, React Hooks e React Refresh.
+- **Vitest 3** com ambiente `jsdom`.
+- **Testing Library** já disponível como dependência de teste.
+- **PostCSS** e **Autoprefixer** no pipeline de CSS.
 
-## 3. Guia de Contribuição e Git Workflow
-
-Este resumo alinha a equipa; o documento completo está em **[docs/GUIDE.md](docs/GUIDE.md)** (convenções, testes, qualidade, quando pedir ajuda).
-
-### Estratégia de branching
-
-| Branch      | Uso                                                                                   |
-| ----------- | ------------------------------------------------------------------------------------- |
-| **main**    | Código em produção. Só recebe merge de `develop` ou, em emergência, de `hotfix/*`.    |
-| **develop** | Integração contínua. Features e correções são mergeadas aqui antes de ir para `main`. |
-
-Branches de trabalho (criar sempre a partir de **develop**):
-
-| Prefixo       | Exemplo                   | Uso                                      |
-| ------------- | ------------------------- | ---------------------------------------- |
-| **feature/**  | `feature/scanner-offline` | Nova funcionalidade                      |
-| **bugfix/**   | `bugfix/login-redirect`   | Correção de bug em desenvolvimento       |
-| **hotfix/**   | `hotfix/security-patch`   | Correção urgente a partir de `main`      |
-| **refactor/** | `refactor/orders-api`     | Refatoração sem mudança de comportamento |
-| **docs/**     | `docs/development-guide`  | Apenas documentação                      |
-| **chore/**    | `chore/upgrade-vite`      | Config, deps, tooling                    |
-
-Fluxo resumido:
-
-1. Atualizar `develop`: `git fetch origin && git checkout develop && git pull --rebase origin develop`
-2. Criar branch: `git checkout -b feature/nome-da-feature`
-3. Commits seguindo Conventional Commits **em inglês**
-4. Antes de abrir PR: atualizar de novo com `develop`, garantir lint e testes
-5. Abrir Pull Request de `feature/...` (ou `bugfix/...`) para **develop**
-6. Após revisão e aprovação, merge em `develop`; deploy para produção via merge de `develop` em `main` (conforme pipeline do time)
-
-### Conventional Commits
-
-Todas as mensagens de commit devem seguir [Conventional Commits](https://www.conventionalcommits.org/) e ser escritas **em inglês** (internacional).
-
-Formato: `tipo(escopo): descrição curta no imperativo`
-
-| Tipo         | Uso                                 | Exemplo                                           |
-| ------------ | ----------------------------------- | ------------------------------------------------- |
-| **feat**     | Nova funcionalidade                 | `feat(scanner): add camera-based QR scan`         |
-| **fix**      | Correção de bug                     | `fix(auth): redirect to login after logout`       |
-| **chore**    | Build, deps, config, tooling        | `chore(deps): upgrade react-query to 5.90`        |
-| **refactor** | Refatoração sem mudar comportamento | `refactor(pages): extract orders table to widget` |
-| **docs**     | Apenas documentação                 | `docs: add FSD architecture section to README`    |
-| **test**     | Testes                              | `test(entities): add AuthContext unit tests`      |
-| **style**    | Formatação (Prettier, etc.)         | `style(shared): run Prettier on ui/`              |
-| **perf**     | Melhoria de performance             | `perf(build): add Vite manualChunks for vendor`   |
-
-**Escopo:** use a camada FSD ou o módulo afetado (ex.: `app`, `pages`, `widgets`, `features`, `entities`, `shared`, ou nome da página/feature como `scanner`, `orders`).
-
-Exemplos corretos:
+## Estrutura de pastas
 
 ```text
-feat(widgets): add global header component
-fix(pages): fix orders filter by status
-chore(build): remove build:dev script for Vercel
-refactor(entities): move Order types to entities/order
-docs: add development guide and commit conventions
-test(shared): add useToast tests
+.
+├── core/frontend/src
+│   ├── app
+│   │   ├── App.tsx
+│   │   ├── main.tsx
+│   │   ├── router
+│   │   └── styles
+│   ├── entities
+│   │   ├── order
+│   │   └── user
+│   ├── features
+│   │   └── import-parts
+│   ├── pages
+│   │   ├── assembly
+│   │   ├── clients
+│   │   ├── dashboard
+│   │   ├── expedition
+│   │   ├── furniture
+│   │   ├── install
+│   │   ├── orders
+│   │   ├── parts
+│   │   ├── processes
+│   │   └── scanner
+│   ├── shared
+│   │   ├── api
+│   │   ├── hooks
+│   │   ├── lib
+│   │   └── ui
+│   └── widgets
+│       ├── app-layout
+│       ├── app-sidebar
+│       └── auth-form
+├── .env.example
+├── package.json
+├── tailwind.config.ts
+├── vite.config.ts
+└── vitest.config.ts
 ```
 
-Exemplos incorretos:
+### Organização conceitual
+
+- `app`: bootstrap da aplicação, providers globais, rotas e estilos.
+- `entities`: modelos/contextos ligados a entidades de domínio.
+- `features`: funcionalidades autocontidas que podem aparecer dentro de páginas.
+- `pages`: telas roteadas da aplicação.
+- `shared`: infraestrutura reutilizável, API client, hooks, utilitários e UI base.
+- `widgets`: blocos maiores de interface, como layout, sidebar e formulário de autenticação.
+
+## Pré-requisitos
+
+Antes de começar, instale:
+
+- **Node.js 18+**.
+- **npm** compatível com o projeto.
+- **Backend Rastroom** rodando localmente, preferencialmente em `http://localhost:8081`.
+- Navegador moderno com suporte a câmera caso use o scanner por câmera.
+
+Para recursos de câmera/PWA em dispositivos reais, prefira servir a aplicação em `https` em ambientes fora do localhost.
+
+## Variáveis de ambiente
+
+O projeto possui um arquivo de exemplo:
+
+```bash
+.env.example
+```
+
+Variável disponível:
+
+| Variável       | Obrigatória | Descrição                | Exemplo                 |
+| -------------- | ----------- | ------------------------ | ----------------------- |
+| `VITE_API_URL` | Sim         | URL base da API backend. | `http://localhost:8081` |
+
+Crie seu arquivo local:
+
+```bash
+cp .env.example .env
+```
+
+Exemplo de `.env`:
+
+```env
+VITE_API_URL=http://localhost:8081
+```
+
+> Não versione `.env` com valores reais. O `.gitignore` já ignora `.env` e `.env.local`.
+
+## Como rodar o projeto
+
+### 1. Clone o repositório
+
+```bash
+git clone <url-do-repositorio>
+cd rastroom-platform-frontend
+```
+
+### 2. Instale as dependências
+
+```bash
+npm install
+```
+
+### 3. Configure o ambiente
+
+```bash
+cp .env.example .env
+```
+
+Edite `VITE_API_URL` se a API estiver em outra porta ou domínio.
+
+### 4. Suba o backend
+
+Garanta que a API esteja disponível. Em desenvolvimento, o frontend está preparado para conversar com:
 
 ```text
-Adicionei o botão          # Não convencional, em português
-feat: novo componente       # Português; preferir "add X component"
-fix bug                    # Sem escopo; "fix(scope): describe the fix"
+http://localhost:8081
 ```
 
-### Fluxo de Pull Request (PR)
+### 5. Inicie o frontend
 
-Antes de abrir um PR:
+```bash
+npm run dev
+```
 
-1. **Lint:** `npm run lint` sem erros.
-2. **Testes:** `npm test` passando.
-3. **Build:** `npm run build` concluindo (recomendado, principalmente antes de abrir PR).
+Por padrão, o Vite usa:
 
-O PR deve ser aberto **sempre para `develop`**. A descrição deve explicar o que mudou e o porquê. Para regras de testes (quando e onde adicionar), qualidade de código e quando pedir ajuda, ver **[docs/GUIDE.md](docs/GUIDE.md)**.
+```text
+http://localhost:8080
+```
+
+## Scripts disponíveis
+
+| Comando              | Descrição                                  |
+| -------------------- | ------------------------------------------ |
+| `npm run dev`        | Inicia o servidor de desenvolvimento Vite. |
+| `npm run build`      | Gera a build de produção em `dist/`.       |
+| `npm run preview`    | Serve localmente a build de produção.      |
+| `npm run lint`       | Executa ESLint no projeto.                 |
+| `npm run test`       | Executa a suíte de testes com Vitest.      |
+| `npm run test:watch` | Executa Vitest em modo observação.         |
+
+## Rotas da aplicação
+
+| Rota         | Tela                    | Protegida | Descrição                                   |
+| ------------ | ----------------------- | --------- | ------------------------------------------- |
+| `/login`     | Login/Cadastro          | Não       | Autenticação do usuário.                    |
+| `/`          | Painel de Controle      | Sim       | Indicadores gerais de produção.             |
+| `/clientes`  | Clientes                | Sim       | CRUD de clientes.                           |
+| `/pedidos`   | Pedidos                 | Sim       | CRUD de pedidos e status.                   |
+| `/moveis`    | Móveis                  | Sim       | Cadastro de móveis por pedido.              |
+| `/pecas`     | Peças                   | Sim       | Cadastro, importação e QR Code de peças.    |
+| `/scanner`   | Scanner                 | Sim       | Leitura por câmera, teclado ou scanner USB. |
+| `/processos` | Processos               | Sim       | Execução e conclusão de etapas de produção. |
+| `/montagem`  | Montagem / Kit          | Sim       | Conferência de peça-mãe e peças filhas.     |
+| `/expedicao` | Expedição               | Sim       | Pedidos prontos para entrega.               |
+| `/dashboard` | Dashboard do Supervisor | Sim       | Métricas, gargalos e atividades recentes.   |
+| `/instalar`  | Instalar App            | Sim       | Instruções e gatilho de instalação PWA.     |
+| `*`          | Not Found               | Não       | Página de rota não encontrada.              |
+
+## Integração com a API
+
+O client central fica em:
+
+```text
+core/frontend/src/shared/api/client.ts
+```
+
+Ele é responsável por:
+
+- Ler `VITE_API_URL`.
+- Remover barra final da URL base.
+- Adicionar `Content-Type: application/json` quando apropriado.
+- Enviar `Authorization: Bearer <token>` quando houver token salvo.
+- Normalizar erros em `ApiError`.
+- Salvar/remover tokens no `localStorage`.
+
+### Chaves de sessão no navegador
+
+```text
+rastroom.access_token
+rastroom.refresh_token
+```
+
+### Endpoints esperados
+
+| Contexto     | Endpoints usados                                                                                                     |
+| ------------ | -------------------------------------------------------------------------------------------------------------------- |
+| Autenticação | `POST /auth/login`, `POST /auth/register`, `GET /auth/me`, `POST /auth/logout`                                       |
+| Dashboard    | `/dashboard/orders-count`, `/dashboard/parts-count`, `/dashboard/clients-count`, `/dashboard/pending-parts`          |
+| Supervisor   | `/dashboard/parts-by-process`, `/dashboard/recent-logs`, `/dashboard/avg-times`, `/dashboard/alerts`                 |
+| Clientes     | `GET /clients`, `POST /clients`, `PATCH /clients/:id`, `DELETE /clients/:id`                                         |
+| Pedidos      | `GET /orders`, `POST /orders`, `PATCH /orders/:id`, `DELETE /orders/:id`                                             |
+| Móveis       | `GET /furniture`, `POST /furniture`, `DELETE /furniture/:id`                                                         |
+| Peças        | `GET /parts`, `POST /parts`, `GET /parts/:id`, `DELETE /parts/:id`, `GET /parts/by-code/:code`, `POST /parts/import` |
+| Processos    | `GET /processes/part/:partId`, `POST /processes/:processId/start`, `POST /processes/logs/:logId/finish`              |
+| Montagem     | `GET /assembly/kits/lookup?code=:code`, `POST /assembly/kits/:motherPartId/finalize`                                 |
+| Expedição    | `GET /expedition/orders`, `POST /expedition/orders/:orderId/expedite`                                                |
+
+## Importação de peças
+
+A tela de peças permite importar arquivos `.csv` ou `.xml` e enviar as peças em lote para a API.
+
+### CSV esperado
+
+```csv
+nome, codigo, largura_mm, altura_mm, profundidade_mm, material, cor, cor_hex, tipo_acabamento, receita_tinta, borda, peca_mae
+Lateral Esquerda, LAT-001, 700, 500, 18, MDF 18mm, Branco Neve, #ffffff, Laca, Base X + Corante Y, Fita branca, sim
+```
+
+Observações:
+
+- O parser aceita separador por vírgula ou ponto e vírgula.
+- Se `codigo` vier vazio, o frontend gera um código temporário.
+- `peca_mae` deve ser `sim` para marcar a peça como peça-mãe.
+- Após o preview, o envio é feito para `POST /parts/import`.
+
+### XML esperado
+
+O parser procura nós como:
+
+```xml
+<part>
+  <name>Lateral Esquerda</name>
+  <code>LAT-001</code>
+  <width>700</width>
+  <height>500</height>
+  <depth>18</depth>
+  <material>MDF 18mm</material>
+  <color>Branco Neve</color>
+  <color_hex>#ffffff</color_hex>
+  <finish_type>Laca</finish_type>
+  <paint_recipe>Base X + Corante Y</paint_recipe>
+  <edge_banding>Fita branca</edge_banding>
+  <mother>sim</mother>
+</part>
+```
+
+Também há suporte a alguns nomes em português, como `peca`, `nome`, `codigo`, `largura`, `altura`, `profundidade`, `cor`, `tipo_acabamento`, `receita_tinta`, `borda` e `peca_mae`.
+
+## PWA e instalação
+
+O projeto usa `vite-plugin-pwa` com:
+
+- `registerType: "autoUpdate"`.
+- Manifesto com nome **Rastroom**.
+- Modo `standalone`.
+- Orientação `portrait`.
+- Cache runtime com estratégia `NetworkFirst` para chamadas de API compatíveis.
+- Tela `/instalar` com fluxo de instalação em Android/Chrome e instruções para iPhone/Safari.
+
+Arquivos de ícone existentes:
+
+```text
+core/frontend/src/shared/assets/img/pwa-192x192.png
+core/frontend/src/shared/assets/img/pwa-512x512.png
+```
+
+> Atenção: o manifesto referencia `/pwa-192x192.png` e `/pwa-512x512.png`. Para produção, confirme se esses arquivos estarão disponíveis na pasta pública/raiz servida pelo Vite.
+
+## Testes e qualidade
+
+### Rodar lint
+
+```bash
+npm run lint
+```
+
+### Rodar testes
+
+```bash
+npm run test
+```
+
+### Rodar testes em modo watch
+
+```bash
+npm run test:watch
+```
+
+Configuração atual do Vitest:
+
+- Ambiente: `jsdom`.
+- Setup: `./src/test/setup.ts`.
+- Padrão de arquivos: `src/**/*.{test,spec}.{ts,tsx}`.
+
+> Observação: a configuração de testes aponta para `src/`, enquanto o código da aplicação está em `core/frontend/src`. Caso os testes sejam adicionados dentro de `core/frontend/src`, ajuste `vitest.config.ts` para incluir esse caminho.
+
+## Build e deploy
+
+Gere a build:
+
+```bash
+npm run build
+```
+
+Visualize a build localmente:
+
+```bash
+npm run preview
+```
+
+Checklist antes de publicar:
+
+- Definir `VITE_API_URL` para a URL pública da API.
+- Garantir que o backend aceite CORS do domínio do frontend.
+- Confirmar disponibilidade dos ícones PWA na raiz pública.
+- Validar login e restauração de sessão em produção.
+- Testar scanner por câmera em contexto seguro (`https`).
+- Rodar `npm run lint` e `npm run build`.
+
+## Troubleshooting
+
+### A tela fica em login mesmo após autenticar
+
+- Verifique se `/auth/login` retorna `access_token`, `refresh_token`, `user` e `roles`.
+- Verifique se `/auth/me` aceita o token no header `Authorization`.
+- Confira se `VITE_API_URL` aponta para a API correta.
+
+### Erro de CORS
+
+- Configure o backend para aceitar a origem do frontend.
+- Em desenvolvimento, confirme se o backend está em `http://localhost:8081`.
+
+### Scanner por câmera não abre
+
+- Use `localhost` ou `https`.
+- Dê permissão de câmera no navegador.
+- Em celular, prefira a câmera traseira.
+
+### QR Code não encontra peça
+
+- Confira se o conteúdo do QR possui `code` válido ou se o texto escaneado é o próprio código.
+- Verifique o endpoint `GET /parts/by-code/:code`.
+
+### PWA não instala
+
+- A instalação depende de navegador compatível e critérios de PWA.
+- Confira manifesto, service worker, ícones e uso de `https` em produção.
+
+## Roadmap sugerido
+
+- [ ] Adicionar testes para autenticação, rotas protegidas e API client.
+- [ ] Padronizar tipagens de domínio compartilhadas entre páginas.
+- [ ] Criar camada de services por recurso (`clients`, `orders`, `parts`, etc.).
+- [ ] Adicionar paginação/filtros em tabelas com muitos registros.
+- [ ] Melhorar tratamento de erros de JSON inválido no API client.
+- [ ] Confirmar estratégia final dos ícones PWA em `public/`.
+- [ ] Documentar contrato oficial da API backend com OpenAPI/Swagger.
+
+## Contribuição
+
+1. Crie uma branch a partir da principal:
+
+```bash
+git checkout -b release/vNota de Versão ex.: release/v0.1.0, release/v1.0.0, hotfix, docs, fix.
+```
+
+2. Instale dependências e rode o projeto:
+
+```bash
+npm install
+npm run dev
+```
+
+3. Antes de abrir PR, valide:
+
+```bash
+npm run lint
+npm run build
+```
+
+4. Abra um Pull Request descrevendo:
+
+- O problema resolvido.
+- O que foi alterado.
+- Como testar.
+- Prints ou gravações quando houver mudança visual.
+
+## Licença
+
+Este repositório ainda não possui um arquivo de licença publicado.
+
+## Autor e contato
+
+- **Nome:** [@Kerlon Amaral](github.com/RobotEby)
+- **LinkedIn:** [kerlon-amaral-dev](https://www.linkedin.com/in/kerlon-amaral-dev/)
+- **GitHub:** [RobotEby](github.com/RobotEby)
 
 ---
 
-## 4. Stack Tecnológica
-
-| Área                      | Tecnologias                                                                                                                                                                                                                                                     |
-| ------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Frontend**              | React 18, TypeScript 5, Vite 5, React Router 6, TanStack React Query 5, Tailwind CSS 3, Radix UI (primitives), React Hook Form + Zod + @hookform/resolvers, Recharts, date-fns, Lucide React, Sonner/Toaster, html5-qrcode, qrcode.react, vite-plugin-pwa (PWA) |
-| **Build / Lint / Testes** | Vite (build e dev server), ESLint 9, Vitest + Testing Library                                                                                                                                                                                                   |
-| **Backend**               | Java 21, Spring Boot 3.x, Maven, PostgreSQL 16, Redis 7 (opcional). Ver [docs/BACKEND-JAVA-GUIDE.md](docs/BACKEND-JAVA-GUIDE.md)                                                                                                                                |
-| **Ferramentas**           | npm (gerenciador de pacotes na raiz), Docker e Docker Compose (backend e infra)                                                                                                                                                                                 |
-
----
-
-## 5. Configuração e Instalação (Setup Local)
-
-### Pré-requisitos
-
-- **Node.js** 18+ e **npm** (para o frontend).
-- (Opcional, para backend) **JDK 21**, **Maven 3.9+**, **Docker** (para PostgreSQL e Redis).
-
-### Passo a passo (frontend)
-
-1. **Clonar o repositório**
-
-   ```bash
-   git clone <url-do-repositorio>
-   cd platform-rastroom
-   ```
-
-2. **Instalar dependências**
-
-   ```bash
-   npm install
-   ```
-
-3. **Variáveis de ambiente**
-
-   Copiar o ficheiro de exemplo e editar se necessário:
-
-   ```bash
-   cp .env.example .env
-   ```
-
-   O ficheiro `.env` não é commitado (está no `.gitignore`). Conteúdo típico:
-
-   | Variável         | Descrição                      | Desenvolvimento                                                      |
-   | ---------------- | ------------------------------ | -------------------------------------------------------------------- |
-   | **VITE_API_URL** | URL base da API (backend Java) | `http://localhost:8081` ou vazio se usar apenas o proxy (ver abaixo) |
-
-   Em desenvolvimento, o Vite tem **proxy** configurado: pedidos a `/api` são reencaminhados para `http://localhost:8081`. Por isso, pode usar `VITE_API_URL=''` ou não definir; as chamadas a `/api/...` passam pelo proxy. Em produção, defina `VITE_API_URL` com o URL público do backend.
-
-4. **Subir o frontend**
-
-   ```bash
-   npm run dev
-   ```
-
-   A aplicação fica disponível em **http://localhost:8080**.
-
-### Backend (opcional)
-
-- Para subir apenas **PostgreSQL** e **Redis**: `docker compose up -d postgres redis` (na raiz do repositório).
-- Para rodar o backend Java localmente (perfil `dev`, porta 8081), seguir **[docs/BACKEND-JAVA-GUIDE.md](docs/BACKEND-JAVA-GUIDE.md)** (pré-requisitos, perfis, variáveis).
-- Para subir a stack completa (backend + postgres + redis): `docker compose up -d` (requer que exista `core/backend-java` com Dockerfile).
-
-O diretório `core/backend-java` é referenciado no `docker-compose.yml` e na documentação; se não existir no clone, o backend é opcional e o frontend pode usar mocks ou API externa.
-
-### Gerenciamento de pacotes
-
-Utiliza-se **npm** na raiz do repositório. As dependências do frontend estão no `package.json` da raiz. Não há monorepo com workspaces; o código do frontend está em `core/frontend/src/` e o entry point é referenciado no `index.html` na raiz.
-
----
-
-## 6. Scripts Disponíveis
-
-| Script         | Comando              | Propósito                                           |
-| -------------- | -------------------- | --------------------------------------------------- |
-| **dev**        | `npm run dev`        | Servidor de desenvolvimento Vite (porta 8080, HMR). |
-| **build**      | `npm run build`      | Build de produção (Vite).                           |
-| **preview**    | `npm run preview`    | Pré-visualização do build de produção.              |
-| **lint**       | `npm run lint`       | Executa o ESLint em todo o projeto.                 |
-| **test**       | `npm test`           | Vitest — execução única dos testes.                 |
-| **test:watch** | `npm run test:watch` | Vitest em modo watch (desenvolvimento).             |
-
----
-
-## 7. Referências
-
-- **[docs/GUIDE.md](docs/GUIDE.md)** — Guia de desenvolvimento: Conventional Commits, branching, testes, qualidade de código, onde colocar testes, quando pedir ajuda.
-- **[docs/BACKEND-JAVA-GUIDE.md](docs/BACKEND-JAVA-GUIDE.md)** — Backend Java: arquitetura, Docker, contrato da API (Auth, Clients, Orders, Furniture, Parts, Scanner, Assembly, Expedition, Dashboard), setup local para o dev Java, CORS e variáveis de ambiente.
-
-Com este README e os dois guias acima, um desenvolvedor pleno ou sénior pode entender a arquitetura FSD, rodar o projeto e fazer o primeiro commit dentro dos padrões da equipa sem precisar de perguntas básicas.
+<p align="center">
+  Feito para dar visibilidade ao chão de fábrica, da primeira peça ao pedido expedido.
+</p>
