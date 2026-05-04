@@ -30,6 +30,7 @@ import {
 import { Badge } from "../../../shared/ui/badge";
 import { useToast } from "../../../shared/hooks/use-toast";
 import { Plus, Pencil, Trash2 } from "lucide-react";
+import { apiRequest } from "../../../shared/api/client";
 
 export type OrderStatus =
   | "rascunho"
@@ -54,22 +55,6 @@ const statusColors: Record<OrderStatus, string> = {
   expedido: "bg-green-200 text-green-900",
 };
 
-const mockClientsList = [
-  { id: "1", name: "Cliente A" },
-  { id: "2", name: "Cliente B" },
-];
-let mockOrdersList = [
-  {
-    id: "1",
-    client_id: "1",
-    code: "PED-001",
-    description: "",
-    status: "em_producao" as OrderStatus,
-    estimated_delivery: "2026-04-10",
-    clients: mockClientsList[0],
-  },
-];
-
 const OrdersPage = () => {
   const [open, setOpen] = useState(false);
   const [editId, setEditId] = useState<string | null>(null);
@@ -86,35 +71,31 @@ const OrdersPage = () => {
 
   const { data: clients } = useQuery({
     queryKey: ["clients"],
-    queryFn: async () => mockClientsList,
+    queryFn: async () => apiRequest<any[]>("/clients"),
   });
 
   const { data: orders, isLoading } = useQuery({
     queryKey: ["orders"],
-    queryFn: async () => mockOrdersList,
+    queryFn: async () => apiRequest<any[]>("/orders"),
   });
 
   const save = useMutation({
     mutationFn: async () => {
-      const clientObj = mockClientsList.find(
-        (c) => c.id === form.client_id,
-      ) ?? { id: "", name: "" };
       const payload = {
         ...form,
         created_by: user?.id,
-        clients: clientObj,
       };
 
       if (editId) {
-        mockOrdersList = mockOrdersList.map((o) =>
-          o.id === editId ? { ...o, ...payload } : o,
-        );
-      } else {
-        mockOrdersList.push({
-          id: Date.now().toString(),
-          ...payload,
+        return apiRequest(`/orders/${editId}`, {
+          method: "PATCH",
+          body: JSON.stringify(payload),
         });
       }
+      return apiRequest("/orders", {
+        method: "POST",
+        body: JSON.stringify(payload),
+      });
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["orders"] });
@@ -128,7 +109,7 @@ const OrdersPage = () => {
 
   const del = useMutation({
     mutationFn: async (id: string) => {
-      mockOrdersList = mockOrdersList.filter((o) => o.id !== id);
+      return apiRequest(`/orders/${id}`, { method: "DELETE" });
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["orders"] });
@@ -318,7 +299,8 @@ const OrdersPage = () => {
                               code: o.code,
                               description: o.description || "",
                               status: o.status,
-                              estimated_delivery: o.estimated_delivery || "",
+                              estimated_delivery:
+                                o.estimated_delivery?.slice(0, 10) || "",
                             });
                             setEditId(o.id);
                             setOpen(true);
