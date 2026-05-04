@@ -22,19 +22,19 @@ const Login = () => {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
-  const { signIn } = useAuth();
+  const { signIn, signUp } = useAuth();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     try {
-      await new Promise((resolve) => setTimeout(resolve, 1000)); // Simula rede
       if (isRegister) {
+        await signUp(fullName, email, password);
         toast({
           title: "Conta criada!",
-          description: "Simulação de criação de conta efetuada.",
+          description: "Acesso criado com sucesso.",
         });
-        setIsRegister(false);
+        navigate("/");
       } else {
         await signIn(email, password);
         navigate("/");
