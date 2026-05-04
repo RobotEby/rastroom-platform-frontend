@@ -32,6 +32,7 @@ import { useToast } from "../../../shared/hooks/use-toast";
 import { Plus, Trash2, QrCode } from "lucide-react";
 import { ImportPartsDialog } from "../../../features/import-parts/ImportPartsDialog";
 import { QRCodeSVG } from "qrcode.react";
+import { apiRequest } from "../../../shared/api/client";
 
 export type ProcessType =
   | "corte"
@@ -62,23 +63,6 @@ type PartRow = {
   qr_code_data?: string;
 };
 
-let mockPartsList: PartRow[] = [
-  {
-    id: "1",
-    code: "P-123",
-    name: "Lateral Esquerda",
-    is_mother_part: true,
-    finish_color_hex: "#ff0000",
-    finish_color: "Vermelho",
-    current_process: "corte" as ProcessType,
-    furniture: { name: "Armário Base", orders: { code: "PED-001" } },
-  },
-];
-
-const mockFurniturePartsList = [
-  { id: "1", name: "Armário Base", orders: { code: "PED-001" } },
-];
-
 const PartsPage = () => {
   const [open, setOpen] = useState(false);
   const [qrOpen, setQrOpen] = useState<string | null>(null);
@@ -108,33 +92,26 @@ const PartsPage = () => {
 
   const { data: furniture } = useQuery({
     queryKey: ["furniture-parts"],
-    queryFn: async () => mockFurniturePartsList,
+    queryFn: async () => apiRequest<any[]>("/furniture"),
   });
 
   const { data: parts, isLoading } = useQuery({
     queryKey: ["parts"],
-    queryFn: async () => mockPartsList,
+    queryFn: async () => apiRequest<PartRow[]>("/parts"),
   });
 
   const motherParts = parts?.filter((p) => p.is_mother_part) ?? [];
 
   const save = useMutation({
     mutationFn: async () => {
-      const partCode =
-        form.code || `P-${Date.now().toString(36).toUpperCase()}`;
-      const fData = mockFurniturePartsList.find(
-        (f) => f.id === form.furniture_id,
-      ) || { name: "", orders: { code: "" } };
-
-      const newPart = {
-        id: Date.now().toString(),
+      return apiRequest("/parts", {
+        method: "POST",
+        body: JSON.stringify({
         ...form,
-        code: partCode,
-        current_process: selectedProcesses[0] || "corte",
-        furniture: fData,
-      };
-
-      mockPartsList.push(newPart);
+        is_mother_part: form.is_mother_part,
+        selected_processes: selectedProcesses,
+        }),
+      });
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["parts"] });
@@ -163,7 +140,7 @@ const PartsPage = () => {
 
   const del = useMutation({
     mutationFn: async (id: string) => {
-      mockPartsList = mockPartsList.filter((p) => p.id !== id);
+      return apiRequest(`/parts/${id}`, { method: "DELETE" });
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["parts"] });
