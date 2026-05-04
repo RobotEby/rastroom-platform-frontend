@@ -7,6 +7,7 @@ import { Button } from "../../../shared/ui/button";
 import { Badge } from "../../../shared/ui/badge";
 import { useToast } from "../../../shared/hooks/use-toast";
 import { Play, Square, CheckCircle, AlertTriangle } from "lucide-react";
+import { apiRequest } from "../../../shared/api/client";
 
 export type ProcessType =
   | "corte"
@@ -37,23 +38,6 @@ const statusColors: Record<ProcessStatus, string> = {
   alerta: "bg-destructive/10 text-destructive",
 };
 
-let mockProcessesLog = [
-  {
-    id: "proc-1",
-    process_type: "corte" as ProcessType,
-    sequence_order: 1,
-    estimated_time_minutes: 10,
-    execution_logs: [],
-  },
-  {
-    id: "proc-2",
-    process_type: "lixamento" as ProcessType,
-    sequence_order: 2,
-    estimated_time_minutes: 15,
-    execution_logs: [],
-  },
-];
-
 const ProcessesPage = () => {
   const [searchParams] = useSearchParams();
   const partId = searchParams.get("part");
@@ -70,15 +54,7 @@ const ProcessesPage = () => {
     queryKey: ["part", partId],
     queryFn: async () => {
       if (!partId) return null;
-      return {
-        id: partId,
-        name: "Mock Part",
-        finish_color: "Branco",
-        finish_color_hex: "#ffffff",
-        finish_type: "Laca",
-        furniture: { name: "Armário Base", orders: { code: "PED-001" } },
-        paint_recipe: undefined as string | undefined,
-      };
+      return apiRequest<any>(`/parts/${partId}`);
     },
     enabled: !!partId,
   });
@@ -87,7 +63,7 @@ const ProcessesPage = () => {
     queryKey: ["processes", partId],
     queryFn: async () => {
       if (!partId) return [];
-      return mockProcessesLog;
+      return apiRequest<any[]>(`/processes/part/${partId}`);
     },
     enabled: !!partId,
   });
@@ -111,20 +87,10 @@ const ProcessesPage = () => {
         }
       }
 
-      const logId = Date.now().toString();
-      mockProcessesLog = mockProcessesLog.map((p) =>
-        p.id === processId
-          ? {
-              ...p,
-              execution_logs: [
-                ...p.execution_logs,
-                { id: logId, status: "em_execucao" },
-              ],
-            }
-          : p,
-      );
-
-      return { id: logId };
+      return apiRequest<{ id: string }>(`/processes/${processId}/start`, {
+        method: "POST",
+        body: JSON.stringify({}),
+      });
     },
     onSuccess: (data) => {
       setActiveLogId(data.id);
@@ -145,19 +111,9 @@ const ProcessesPage = () => {
   const finishProcess = useMutation({
     mutationFn: async () => {
       if (!activeLogId) throw new Error("Nenhum processo ativo");
-      mockProcessesLog = mockProcessesLog.map((p) => {
-        const hasLog = p.execution_logs.some((l) => l.id === activeLogId);
-        if (hasLog) {
-          return {
-            ...p,
-            execution_logs: p.execution_logs.map((l) =>
-              l.id === activeLogId
-                ? { ...l, status: "concluido", elapsed_seconds: timer }
-                : l,
-            ),
-          };
-        }
-        return p;
+      return apiRequest(`/processes/logs/${activeLogId}/finish`, {
+        method: "POST",
+        body: JSON.stringify({ elapsed_seconds: timer }),
       });
     },
     onSuccess: () => {
