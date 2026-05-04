@@ -9,23 +9,7 @@ import { Button } from "../../../shared/ui/button";
 import { Badge } from "../../../shared/ui/badge";
 import { useToast } from "../../../shared/hooks/use-toast";
 import { Truck, CheckCircle } from "lucide-react";
-
-let mockOrders = [
-  {
-    id: "1",
-    code: "PED-001",
-    status: "pronto",
-    clients: { name: "Cliente A", email: "a@a.com" },
-    estimated_delivery: "2026-04-10",
-  },
-  {
-    id: "2",
-    code: "PED-002",
-    status: "montagem",
-    clients: { name: "Cliente B", email: "b@b.com" },
-    estimated_delivery: "2026-04-12",
-  },
-];
+import { apiRequest } from "../../../shared/api/client";
 
 const ExpeditionPage = () => {
   const { toast } = useToast();
@@ -33,23 +17,14 @@ const ExpeditionPage = () => {
 
   const { data: readyOrders, isLoading } = useQuery({
     queryKey: ["ready-orders"],
-    queryFn: async () => {
-      return mockOrders.filter((o) =>
-        ["pronto", "montagem", "expedido"].includes(o.status),
-      );
-    },
+    queryFn: async () => apiRequest<any[]>("/expedition/orders"),
   });
 
   const expedite = useMutation({
     mutationFn: async (orderId: string) => {
-      mockOrders = mockOrders.map((o) =>
-        o.id === orderId ? { ...o, status: "expedido" } : o,
-      );
-      // Simula envio de notificação sem o Edge function
-      console.log(
-        "Mock: Notificação de expedição enviada para o pedido",
-        orderId,
-      );
+      return apiRequest(`/expedition/orders/${orderId}/expedite`, {
+        method: "POST",
+      });
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["ready-orders"] });
