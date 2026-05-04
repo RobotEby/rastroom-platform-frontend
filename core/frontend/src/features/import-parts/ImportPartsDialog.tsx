@@ -27,6 +27,7 @@ import {
 import { Badge } from "../../shared/ui/badge";
 import { useToast } from "../../shared/hooks/use-toast";
 import { Upload, FileUp, AlertCircle } from "lucide-react";
+import { apiRequest } from "../../shared/api/client";
 
 export type ProcessType =
   | "corte"
@@ -122,12 +123,6 @@ function parseXML(text: string): ParsedPart[] {
 
 const defaultProcesses: ProcessType[] = ["corte", "lixamento", "pintura"];
 
-// Mock de móveis
-const mockFurnitureList = [
-  { id: "1", name: "Armário Cozinha", orders: { code: "PED-001" } },
-  { id: "2", name: "Guarda-Roupa", orders: { code: "PED-002" } },
-];
-
 export function ImportPartsDialog() {
   const [open, setOpen] = useState(false);
   const [furnitureId, setFurnitureId] = useState("");
@@ -140,9 +135,7 @@ export function ImportPartsDialog() {
 
   const { data: furniture } = useQuery({
     queryKey: ["furniture"],
-    queryFn: async () => {
-      return mockFurnitureList;
-    },
+    queryFn: async () => apiRequest<any[]>("/furniture"),
   });
 
   const importMutation = useMutation({
@@ -150,8 +143,15 @@ export function ImportPartsDialog() {
       if (!furnitureId) throw new Error("Selecione um móvel");
       if (parsed.length === 0) throw new Error("Nenhuma peça para importar");
 
-      await new Promise((resolve) => setTimeout(resolve, 800));
-      return parsed.length;
+      const result = await apiRequest<{ count: number }>("/parts/import", {
+        method: "POST",
+        body: JSON.stringify({
+          furniture_id: furnitureId,
+          parts: parsed,
+          processes: defaultProcesses,
+        }),
+      });
+      return result.count;
     },
     onSuccess: (count) => {
       qc.invalidateQueries({ queryKey: ["parts"] });
