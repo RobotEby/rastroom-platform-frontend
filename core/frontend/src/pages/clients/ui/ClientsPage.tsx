@@ -29,6 +29,15 @@ import { Plus, Pencil, Trash2 } from "lucide-react";
 import { Textarea } from "../../../shared/ui/textarea";
 import { apiRequest } from "../../../shared/api/client";
 
+interface Client {
+  id: string;
+  name: string;
+  email?: string;
+  phone?: string;
+  address?: string;
+  notes?: string;
+}
+
 const ClientsPage = () => {
   const [open, setOpen] = useState(false);
   const [editId, setEditId] = useState<string | null>(null);
@@ -42,9 +51,9 @@ const ClientsPage = () => {
   const { toast } = useToast();
   const qc = useQueryClient();
 
-  const { data: clients, isLoading } = useQuery({
+  const { data: clients, isLoading } = useQuery<Client[]>({
     queryKey: ["clients"],
-    queryFn: async () => apiRequest<any[]>("/clients"),
+    queryFn: async () => apiRequest<Client[]>("/clients"),
   });
 
   const save = useMutation({
