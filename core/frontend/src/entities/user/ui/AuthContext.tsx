@@ -1,7 +1,17 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
-import { authApi, clearTokens, getAccessToken, setTokens } from "../../../shared/api/client";
+import {
+  authApi,
+  clearTokens,
+  getAccessToken,
+  setTokens,
+} from "../../../shared/api/client";
 
-export type AppRole = "admin" | "operator" | "operador" | "montagem" | "supervisor";
+export type AppRole =
+  | "admin"
+  | "operator"
+  | "operador"
+  | "montagem"
+  | "supervisor";
 export interface User {
   id: string;
   email?: string;
@@ -56,7 +66,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
       try {
         const me = await authApi.me();
         setUser(me as User);
-        setRoles(((me.roles || []) as AppRole[]));
+        setRoles((me.roles || []) as AppRole[]);
         setSession({ user: me as User, access_token: token });
       } catch {
         clearTokens();
@@ -72,14 +82,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   }, []);
 
   const applyAuth = (data: {
-    user: User;
+    user: { id: string; email?: string; full_name?: string; roles: string[] };
     roles: string[];
     access_token: string;
     refresh_token?: string;
   }) => {
     setTokens(data.access_token, data.refresh_token);
-    setSession({ user: data.user, access_token: data.access_token });
-    setUser(data.user);
+    const user: User = {
+      ...data.user,
+      roles: data.user.roles as AppRole[],
+    };
+    setSession({ user, access_token: data.access_token });
+    setUser(user);
     setRoles(data.roles as AppRole[]);
   };
 
@@ -107,7 +121,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
 
   return (
     <AuthContext.Provider
-      value={{ session, user, roles, loading, signIn, signUp, signOut, hasRole }}
+      value={{
+        session,
+        user,
+        roles,
+        loading,
+        signIn,
+        signUp,
+        signOut,
+        hasRole,
+      }}
     >
       {children}
     </AuthContext.Provider>

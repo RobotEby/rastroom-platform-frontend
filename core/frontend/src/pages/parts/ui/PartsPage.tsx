@@ -63,6 +63,12 @@ type PartRow = {
   qr_code_data?: string;
 };
 
+type FurnitureRow = {
+  id: string;
+  name: string;
+  orders?: { code: string };
+};
+
 const PartsPage = () => {
   const [open, setOpen] = useState(false);
   const [qrOpen, setQrOpen] = useState<string | null>(null);
@@ -92,7 +98,7 @@ const PartsPage = () => {
 
   const { data: furniture } = useQuery({
     queryKey: ["furniture-parts"],
-    queryFn: async () => apiRequest<any[]>("/furniture"),
+    queryFn: async () => apiRequest<FurnitureRow[]>("/furniture"),
   });
 
   const { data: parts, isLoading } = useQuery({

@@ -9,6 +9,40 @@ import { useToast } from "../../../shared/hooks/use-toast";
 import { Play, Square, CheckCircle, AlertTriangle } from "lucide-react";
 import { apiRequest } from "../../../shared/api/client";
 
+type ExecutionLog = {
+  id: string;
+  status: "aguardando" | "em_execucao" | "concluido" | "alerta";
+  elapsed_seconds?: number;
+  started_at?: string;
+  finished_at?: string;
+  user_id?: string;
+};
+
+type Process = {
+  id: string;
+  process_type: ProcessType;
+  sequence_order: number;
+  estimated_time_minutes?: number;
+  part_id: string;
+  execution_logs: ExecutionLog[];
+};
+
+type Part = {
+  id: string;
+  code: string;
+  name: string;
+  finish_color?: string;
+  finish_color_hex?: string;
+  finish_type?: string;
+  paint_recipe?: string;
+  furniture?: {
+    name: string;
+    orders?: {
+      code: string;
+    };
+  };
+};
+
 export type ProcessType =
   | "corte"
   | "lixamento"
@@ -54,7 +88,7 @@ const ProcessesPage = () => {
     queryKey: ["part", partId],
     queryFn: async () => {
       if (!partId) return null;
-      return apiRequest<any>(`/parts/${partId}`);
+      return apiRequest<Part>(`/parts/${partId}`);
     },
     enabled: !!partId,
   });
@@ -63,7 +97,7 @@ const ProcessesPage = () => {
     queryKey: ["processes", partId],
     queryFn: async () => {
       if (!partId) return [];
-      return apiRequest<any[]>(`/processes/part/${partId}`);
+      return apiRequest<Process[]>(`/processes/part/${partId}`);
     },
     enabled: !!partId,
   });
@@ -177,8 +211,8 @@ const ProcessesPage = () => {
               <p className="text-sm text-muted-foreground">
                 {part.finish_type}
               </p>
-              {(part).paint_recipe && (
-                <p className="text-sm mt-1">📋 {(part).paint_recipe}</p>
+              {part.paint_recipe && (
+                <p className="text-sm mt-1">📋 {part.paint_recipe}</p>
               )}
             </div>
           </CardContent>
@@ -229,7 +263,7 @@ const ProcessesPage = () => {
                     )}
                     {doneLog && (
                       <p className="text-xs text-green-600">
-                        ✅ {formatTime((doneLog).elapsed_seconds || 0)}
+                        ✅ {formatTime(doneLog.elapsed_seconds || 0)}
                       </p>
                     )}
                   </div>

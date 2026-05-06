@@ -30,6 +30,24 @@ import { useToast } from "../../../shared/hooks/use-toast";
 import { Plus, Trash2 } from "lucide-react";
 import { apiRequest } from "../../../shared/api/client";
 
+type Order = {
+  id: string;
+  code: string;
+  clients?: {
+    name: string;
+  };
+};
+
+type Furniture = {
+  id: string;
+  name: string;
+  orders?: {
+    code: string;
+  };
+  furniture_type?: string | null;
+  estimated_lead_time_hours?: number;
+};
+
 const FurniturePage = () => {
   const [open, setOpen] = useState(false);
   const [form, setForm] = useState({
@@ -42,14 +60,14 @@ const FurniturePage = () => {
   const { toast } = useToast();
   const qc = useQueryClient();
 
-  const { data: orders } = useQuery({
+  const { data: orders } = useQuery<Order[]>({
     queryKey: ["orders-list"],
-    queryFn: async () => apiRequest<any[]>("/orders"),
+    queryFn: async () => apiRequest<Order[]>("/orders"),
   });
 
-  const { data: furniture, isLoading } = useQuery({
+  const { data: furniture, isLoading } = useQuery<Furniture[]>({
     queryKey: ["furniture"],
-    queryFn: async () => apiRequest<any[]>("/furniture"),
+    queryFn: async () => apiRequest<Furniture[]>("/furniture"),
   });
 
   const save = useMutation({
@@ -57,13 +75,13 @@ const FurniturePage = () => {
       return apiRequest("/furniture", {
         method: "POST",
         body: JSON.stringify({
-        order_id: form.order_id,
-        name: form.name,
-        description: form.description || "",
-        furniture_type: form.furniture_type || "",
-        estimated_lead_time_hours: form.estimated_lead_time_hours
-          ? Number(form.estimated_lead_time_hours)
-          : 0,
+          order_id: form.order_id,
+          name: form.name,
+          description: form.description || "",
+          furniture_type: form.furniture_type || "",
+          estimated_lead_time_hours: form.estimated_lead_time_hours
+            ? Number(form.estimated_lead_time_hours)
+            : 0,
         }),
       });
     },

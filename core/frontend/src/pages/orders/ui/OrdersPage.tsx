@@ -39,6 +39,22 @@ export type OrderStatus =
   | "pronto"
   | "expedido";
 
+export type Client = {
+  id: string;
+  name: string;
+};
+
+export type Order = {
+  id: string;
+  client_id: string;
+  code: string;
+  description?: string;
+  status: OrderStatus;
+  estimated_delivery?: string;
+  created_by: string;
+  clients?: Client;
+};
+
 const statusLabels: Record<OrderStatus, string> = {
   rascunho: "Rascunho",
   em_producao: "Em Produção",
@@ -71,12 +87,12 @@ const OrdersPage = () => {
 
   const { data: clients } = useQuery({
     queryKey: ["clients"],
-    queryFn: async () => apiRequest<any[]>("/clients"),
+    queryFn: async () => apiRequest<Client[]>("/clients"),
   });
 
   const { data: orders, isLoading } = useQuery({
     queryKey: ["orders"],
-    queryFn: async () => apiRequest<any[]>("/orders"),
+    queryFn: async () => apiRequest<Order[]>("/orders"),
   });
 
   const save = useMutation({

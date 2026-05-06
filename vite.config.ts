@@ -15,7 +15,11 @@ export default defineConfig(({ mode }) => ({
       "/api": {
         target: "http://localhost:8081",
         changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/api/, ""),
       },
+      "/auth": { target: "http://localhost:8081", changeOrigin: true },
+      "/users": { target: "http://localhost:8081", changeOrigin: true },
+      "/orders": { target: "http://localhost:8081", changeOrigin: true },
     },
   },
   plugins: [
