@@ -34,14 +34,18 @@ export function clearTokens() {
   localStorage.removeItem(REFRESH_TOKEN_KEY);
 }
 
-export async function apiRequest<T>(path: string, options: RequestInit = {}): Promise<T> {
+let isRefreshing = false;
+
+export async function apiRequest<T>(
+  path: string,
+  options: RequestInit = {},
+): Promise<T> {
   const headers = new Headers(options.headers);
   const token = getAccessToken();
 
   if (!(options.body instanceof FormData) && !headers.has("Content-Type")) {
     headers.set("Content-Type", "application/json");
   }
-
   if (token && !headers.has("Authorization")) {
     headers.set("Authorization", `Bearer ${token}`);
   }
@@ -51,15 +55,48 @@ export async function apiRequest<T>(path: string, options: RequestInit = {}): Pr
     headers,
   });
 
-  if (response.status === 204) return undefined as T;
+  if (response.status === 401 && !isRefreshing && path !== "/auth/refresh") {
+    isRefreshing = true;
+    try {
+      const refreshToken = localStorage.getItem(REFRESH_TOKEN_KEY);
+      if (!refreshToken) throw new Error("Sem refresh token");
 
-  const text = await response.text();
-  const payload = text ? JSON.parse(text) : null;
+      const res = await fetch(`${API_BASE_URL}/auth/refresh`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ refresh_token: refreshToken }),
+      });
 
-  if (!response.ok) {
-    throw new ApiError(payload || { message: response.statusText }, response.status);
+      if (!res.ok) throw new Error("Refresh inválido");
+
+      const data = await res.json();
+      setTokens(data.access_token, data.refresh_token);
+
+      headers.set("Authorization", `Bearer ${data.access_token}`);
+      const retry = await fetch(`${API_BASE_URL}${path}`, {
+        ...options,
+        headers,
+      });
+      const retryText = await retry.text();
+      return retryText ? JSON.parse(retryText) : (undefined as T);
+    } catch {
+      clearTokens();
+      window.location.href = "/login";
+      throw new Error("Sessão expirada");
+    } finally {
+      isRefreshing = false;
+    }
   }
 
+  if (response.status === 204) return undefined as T;
+  const text = await response.text();
+  const payload = text ? JSON.parse(text) : null;
+  if (!response.ok) {
+    throw new ApiError(
+      payload || { message: response.statusText },
+      response.status,
+    );
+  }
   return payload as T;
 }
 
@@ -85,6 +122,12 @@ export const authApi = {
       body: JSON.stringify({ full_name, email, password }),
     }),
   me: () =>
-    apiRequest<{ id: string; email?: string; full_name?: string; roles: string[] }>("/auth/me"),
-  logout: () => apiRequest<{ message: string }>("/auth/logout", { method: "POST" }),
+    apiRequest<{
+      id: string;
+      email?: string;
+      full_name?: string;
+      roles: string[];
+    }>("/auth/me"),
+  logout: () =>
+    apiRequest<{ message: string }>("/auth/logout", { method: "POST" }),
 };
