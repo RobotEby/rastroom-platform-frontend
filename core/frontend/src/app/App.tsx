@@ -20,7 +20,24 @@ import SupervisorDashboard from "../pages/dashboard/ui/SupervisorDashboard";
 import InstallPage from "../pages/install/ui/InstallPage";
 import NotFound from "../pages/not-found/ui/NotFound";
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      retry: (failureCount, error: unknown) => {
+        if (
+          error instanceof Error &&
+          "statusCode" in error &&
+          [401, 403, 404].includes((error as { statusCode: number }).statusCode)
+        ) {
+          return false;
+        }
+        return failureCount < 2;
+      },
+      refetchOnWindowFocus: false,
+      staleTime: 30_000,
+    },
+  },
+});
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
