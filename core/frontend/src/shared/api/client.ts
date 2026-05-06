@@ -55,7 +55,12 @@ export async function apiRequest<T>(
     headers,
   });
 
-  if (response.status === 401 && !isRefreshing && path !== "/auth/refresh") {
+  const isAuthRoute = [
+    "/auth/login",
+    "/auth/register",
+    "/auth/refresh",
+  ].includes(path);
+  if (response.status === 401 && !isRefreshing && !isAuthRoute) {
     isRefreshing = true;
     try {
       const refreshToken = localStorage.getItem(REFRESH_TOKEN_KEY);
