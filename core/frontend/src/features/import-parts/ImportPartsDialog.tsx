@@ -52,6 +52,14 @@ interface ParsedPart {
   is_mother_part: boolean;
 }
 
+interface Furniture {
+  id: string;
+  name: string;
+  orders?: {
+    code?: string;
+  } | null;
+}
+
 function parseCSV(text: string): ParsedPart[] {
   const lines = text.trim().split("\n");
   if (lines.length < 2) return [];
@@ -133,9 +141,9 @@ export function ImportPartsDialog() {
   const { toast } = useToast();
   const qc = useQueryClient();
 
-  const { data: furniture } = useQuery({
+  const { data: furniture } = useQuery<Furniture[]>({
     queryKey: ["furniture"],
-    queryFn: async () => apiRequest<any[]>("/furniture"),
+    queryFn: async () => apiRequest<Furniture[]>("/furniture"),
   });
 
   const importMutation = useMutation({
