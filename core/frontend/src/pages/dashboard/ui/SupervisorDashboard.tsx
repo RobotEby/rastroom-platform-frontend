@@ -46,6 +46,30 @@ const COLORS = [
   "hsl(180,60%,40%)",
 ];
 
+type LogEntry = {
+  id: string;
+  parts?: {
+    name: string;
+    code: string;
+  };
+  processes?: {
+    process_type: ProcessType;
+  };
+  status?: string;
+  elapsed_seconds?: number;
+};
+
+type AlertEntry = {
+  id: string;
+  parts?: {
+    name: string;
+    code: string;
+  };
+  processes?: {
+    process_type: ProcessType;
+  };
+};
+
 const SupervisorDashboard = () => {
   const { data: partsByProcess } = useQuery({
     queryKey: ["parts-by-process"],
@@ -54,7 +78,7 @@ const SupervisorDashboard = () => {
 
   const { data: recentLogs } = useQuery({
     queryKey: ["recent-logs"],
-    queryFn: async () => apiRequest<any[]>("/dashboard/recent-logs"),
+    queryFn: async () => apiRequest<LogEntry[]>("/dashboard/recent-logs"),
   });
 
   const { data: avgTimes } = useQuery({
@@ -64,7 +88,7 @@ const SupervisorDashboard = () => {
 
   const { data: alerts } = useQuery({
     queryKey: ["alerts"],
-    queryFn: async () => apiRequest<any[]>("/dashboard/alerts"),
+    queryFn: async () => apiRequest<AlertEntry[]>("/dashboard/alerts"),
   });
 
   return (
